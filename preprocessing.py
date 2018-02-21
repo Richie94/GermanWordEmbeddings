@@ -20,6 +20,7 @@ import re
 import logging
 import sys
 import multiprocessing as mp
+from snowballstemmer import stemmer
 
 # configuration
 parser = argparse.ArgumentParser(description='Script for preprocessing public corpora')
@@ -27,6 +28,7 @@ parser.add_argument('raw', type=str, help='source file with raw data for corpus 
 parser.add_argument('target', type=str, help='target file name to store corpus in')
 parser.add_argument('-p', '--punctuation', action='store_true', help='remove punctuation tokens')
 parser.add_argument('-s', '--stopwords', action='store_true', help='remove stop word tokens')
+parser.add_argument('-m', '--stemmer', action='store_true', help='stem word tokens')
 parser.add_argument(
     '-u', '--umlauts', action='store_true', help='replace german umlauts with their respective digraphs'
 )
@@ -39,6 +41,7 @@ sentence_detector = nltk.data.load('tokenizers/punkt/german.pickle')
 punctuation_tokens = ['.', '..', '...', ',', ';', ':', '(', ')', '"', '\'', '[', ']',
                       '{', '}', '?', '!', '-', '–', '+', '*', '--', '\'\'', '``']
 punctuation = '?.!/;:()&+'
+st = stemmer('german')
 
 
 def replace_umlauts(text):
@@ -81,6 +84,8 @@ def process_line(line):
             words = [re.sub('[{}]'.format(punctuation), '', x) for x in words]
         if args.stopwords:
             words = [x for x in words if x not in stop_words]
+        if args.stemmer:
+            words = st.stemWords(words)
         # write one sentence per line in output file, if sentence has more than 1 word
         if len(words) > 1:
             return '{}\n'.format(' '.join(words))
