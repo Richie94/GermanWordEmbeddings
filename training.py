@@ -44,7 +44,7 @@ class CorpusSentences(object):
         for fname in os.listdir(self.dirname):
             with open(os.path.join(self.dirname, fname)) as fp:
                 for line in fp:
-                    yield line.split()
+                    yield [x for x in line.lower().split() if not x.isdigit()]
 
 sentences = CorpusSentences(args.corpora)
 
@@ -62,4 +62,4 @@ model = gensim.models.Word2Vec(
 )
 
 # store model
-model.wv.save_word2vec_format(args.target, binary=True)
+model.save(args.target)
